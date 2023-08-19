@@ -7,5 +7,9 @@
     </head>
     <body>
         <h1>Index Page</h1>
+        
+        <a href="./login">Login</a>
+        <br />
+        <a href="./signup">Signup</a>
     </body>
 </html>
