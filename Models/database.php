@@ -12,17 +12,17 @@ class DB
     public $response = [];
     public function __construct()
     {
-        session_start();
-        $this->conn = new mysqli("localhost", "root", "", "api");
-
-        if (!$this->conn || $this->conn->connect_error) {
+        try {
+            session_start();
+            $this->conn = new mysqli("localhost", "root", "", "api");
+        } catch (err) {
             http_response_code(1001);
-            exit("Connection Failed!");
+            exit("Connection Refused!");
         }
     }
 
     /* GET REQUEST */
-    function GET($table, $data = "", $option = "")
+    function GET($table, $data = "*", $option = "")
     {
         if (empty($table)) {
             $this->response = [
@@ -124,5 +124,11 @@ class DB
 
     function DELETE($table, $option = [])
     {
+    }
+
+    /* EXTRA DB ENDPOINT */
+    function GET_USERS($option = "WHERE id=1")
+    {
+        return $this->GET("users", "", $option);
     }
 }

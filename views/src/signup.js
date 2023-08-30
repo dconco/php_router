@@ -21,15 +21,15 @@ btn.onclick = function(e) {
     
     /* SUBMIT FORM TO REGISTER API */
     axios({
-        method: 'POST',
-        url: '/api/new/user/register',
-        data: formData
+        method: 'GET',
+        url: 'api/user/1',
+        //data: formData
     })
     .then(function (res) {
         let data = JSON.stringify(res.data);
         alert(data);
     })
     .catch(function(err) {
-        alert(err)
+        alert(err.status);
     });
 }

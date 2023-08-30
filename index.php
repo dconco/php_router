@@ -19,10 +19,9 @@ $route->add("/new/upload", $views . "upload.php");
 $route->add("/user/{username}", $views . "profile.php");
 
 // handling API's
-$route->add("/api/account/user/register", $api_dir . "UserController.php");
-$route->add("/api/account/user/login", $api_dir . "UserController.php");
+$route->add("/api/account/register", $api_dir . "UserController.php");
+$route->add("/api/account/login", $api_dir . "UserController.php");
 $route->add("/api/user/{user_id}", $api_dir . "UserController.php");
-$route->add("/api/post", $api_dir . "UserController.php");
 
 // handling not found errors
 $route->notFound($views . "errors/404.php");

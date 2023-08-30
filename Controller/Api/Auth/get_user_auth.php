@@ -1,6 +1,6 @@
 <?php
 $db = new DB();
-$get_req = $db->GET("users", "*", "WHERE user_id = '{$get_id}'");
+$get_req = $db->GET_USERS("WHERE id = '{$get_id}'");
 
 $data = [];
 $response = [];

@@ -2,11 +2,13 @@
 $method = $_SERVER["REQUEST_METHOD"];
 $uri = $_SERVER["REQUEST_URI"];
 $url = explode("?", $uri);
+$req_uri = preg_replace("/(^\/)|(\/$)/", "", $url[0]);
 
 require "Models/database.php";
+echo $req_uri;
 
-switch ($url[0]) {
-    case "/api/account/user/register":
+switch ($req_uri) {
+    case "api/account/register":
         /**
          * REGISTER ENDPOINT
          */
@@ -24,19 +26,25 @@ switch ($url[0]) {
             /* MAIN ENDPOINT */
             $requestData = json_decode(file_get_contents("php://input"), true);
 
-            $user = [
-                "name" => htmlspecialchars($requestData["name"]),
-                "email" => htmlspecialchars($requestData["email"]),
-                "password" => htmlspecialchars($requestData["password"]),
-            ];
-            
-            $response = [
-                "status" => 405,
-                "statusText" => "Method Not Allowed",
-                "message" =>
-                    "The method used in the request is not allowed for the resource.",
-            ];
-            //require __DIR__ . "/Auth/signup_auth.php";
+            if (
+                empty($requestData["name"]) ||
+                empty($requestData["email"]) ||
+                empty($requestData["password"])
+            ) {
+                $response = [
+                    "status" => 400,
+                    "statusText" => "Bad Request",
+                    "message" => "Invalid Request Body",
+                ];
+            } else {
+                $user = [
+                    "name" => htmlspecialchars($requestData["name"]),
+                    "email" => htmlspecialchars($requestData["email"]),
+                    "password" => htmlspecialchars($requestData["password"]),
+                ];
+
+                require __DIR__ . "/Auth/signup_auth.php";
+            }
         }
 
         /* RETURN RESPONSE TEXT */
@@ -50,7 +58,7 @@ switch ($url[0]) {
     /* // END REGISTER ENDPOINT */
 
     /* // GET USER ENDPOINT */
-    case "/api/user/{$req["user_id"]}":
+    case "api/user/{$req["user_id"]}":
         $response = [];
 
         // if Request Method is not POST
@@ -63,7 +71,7 @@ switch ($url[0]) {
             ];
         } else {
             $get_id = $req["user_id"];
-            include_once __DIR__ . "/Auth/get_users.php";
+            include_once __DIR__ . "/Auth/get_user_auth.php";
         }
 
         /* RETURN RESPONSE TEXT */
@@ -75,27 +83,14 @@ switch ($url[0]) {
 
         break;
 
-    case "/api/post":
-        $requestData = json_decode(file_get_contents("php://input"), true);
-
-        if ($requestData) {
-            $response = [
-                "status" => 200,
-                "statusText" => "OK",
-                "message" => "Posted Data Success",
-                "data" => $requestData,
-            ];
-        }
-
-        http_response_code($response["status"]);
-        header("Content-type: application/json");
-
-        $res = json_encode($response);
-        echo $res;
-
-        break;
-
     default:
-        header("HTTP/1.1 400 Bad Request");
+        $response = [
+            "status" => 404,
+            "statusText" => "Not Found",
+            "message" => "API Request Not Found",
+        ];
+
+        header("HTTP/1.1 404 Not Found");
+        exit(json_encode($response));
         break;
 }
