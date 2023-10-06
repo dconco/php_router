@@ -13,7 +13,7 @@
     <form action="" method="POST">
         <div class="name">
             <label for="name">Fullname</label><br />
-            <input type="text" name="name" id="name" />
+            <input type="text" name="fullname" id="name" />
         </div>
         
         <br />

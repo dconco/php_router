@@ -3,17 +3,16 @@ $db = new DB();
 
 $user_id = "";
 for ($i = 0; $i < 2; $i++) {
-    $id = rand(000000000, 999999999);
+    $id = rand(time(), 99999999);
     $user_id .= $id;
 }
 
 $user_data = [
     "user_id" => $user_id,
-    "name" => $user["name"],
+    "fullname" => $user["fullname"],
     "email" => $user["email"],
-    "password" => password_hash($user["password"], PASSWORD_BCRYPT),
+    "password" => password_hash($user["password"], PASSWORD_DEFAULT),
 ];
 
 $send = $db->POST("users", $user_data);
-
 $response = $send;

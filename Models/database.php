@@ -1,28 +1,32 @@
 <?php
 /**
- * DATABASE CONNECTION ENDPOINT
+ * DATABASE ENDPOINT
  */
 class DB
 {
     /**
-     * CONNECT TO DATABASE
+     * CONNECTION TO DATABASE
      **/
 
     public $conn;
     public $response = [];
+    public $get_last_insert_user;
+
     public function __construct()
     {
         try {
             session_start();
-            $this->conn = new mysqli("localhost", "root", "", "api");
-        } catch (err) {
+            $this->conn = new mysqli("localhost", "root", "", "react_blog");
+        } catch (error) {
             http_response_code(1001);
             exit("Connection Refused!");
         }
     }
 
-    /* GET REQUEST */
-    function GET($table, $data = "*", $option = "")
+    /**
+     * GET REQUEST FROM DATABASE
+     **/
+    function GET(string $table, string $data = "*", string $option)
     {
         if (empty($table)) {
             $this->response = [
@@ -30,8 +34,8 @@ class DB
                 "statusText" => "Bad Request",
                 "message" => "First GET Parameter is required!",
             ];
+
             return $this->response;
-            exit();
         }
 
         if (empty($data)) {
@@ -58,24 +62,26 @@ class DB
         return $this->response;
     }
 
-    /* POST REQUEST */
-    function POST($table, $data = [])
+    /**
+     * POST REQUEST TO DATABASE
+     **/
+    function POST(string $table, array $data)
     {
-        if (array_key_exists("email", $data) && $table == "users") {
+        if ((array_key_exists("email", $data) || array_key_exists("user_id", $data)) && $table == "users") {
             $get_email = $this->GET(
                 $table,
                 "email",
-                "WHERE email = '{$data["email"]}'"
+                "WHERE email = '{$data["email"]}' OR user_id = '{$data["user_id"]}'"
             );
 
             if ($get_email["query"]->num_rows > 0) {
                 $this->response = [
-                    "status" => 400,
-                    "statusText" => "Bad Request",
-                    "message" => "The Email has already been used.",
+                    "status" => 403,
+                    "statusText" => "Forbidden",
+                    "message" => "The Email or User ID has already been used.",
                 ];
+
                 return $this->response;
-                exit();
             }
         }
 
@@ -101,10 +107,12 @@ class DB
         )";
 
         if ($this->conn->query($sql)) {
+            $this->get_last_insert_user = $this->GET($table, "*", "WHERE id = {$this->conn->insert_id}");
+
             $this->response = [
                 "status" => 200,
                 "statusText" => "OK",
-                "data" => $data,
+                "data" => $this->get_last_insert_user["query"]->fetch_assoc(),
                 "message" => "User Registered Successfully.",
             ];
         } else {
@@ -118,16 +126,18 @@ class DB
         return $this->response;
     }
 
-    function UPDATE($table, $data = [], $option = [])
+    function UPDATE(string $table, array $data, array $option)
     {
     }
 
-    function DELETE($table, $option = [])
+    function DELETE(string $table, array $option)
     {
     }
 
-    /* EXTRA DB ENDPOINT */
-    function GET_USERS($option = "WHERE id=1")
+    /**
+     * GET ALL USERS FROM DATABASE
+     **/
+    function GET_USERS(string $option = "WHERE id=1")
     {
         return $this->GET("users", "", $option);
     }

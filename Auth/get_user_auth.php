@@ -1,6 +1,6 @@
 <?php
 $db = new DB();
-$get_req = $db->GET_USERS("WHERE id = '{$get_id}'");
+$get_req = $db->GET_USERS("WHERE user_id = '{$get_id}'");
 
 $data = [];
 $response = [];
@@ -13,7 +13,7 @@ if (array_key_exists("query", $get_req)) {
             "status" => 200,
             "statusText" => "OK",
             "data" => $res,
-            "message" => "Get Request Successfull.",
+            "message" => "Get User Request Successfull.",
         ];
     } else {
         $res = "No User Found as $get_id";
