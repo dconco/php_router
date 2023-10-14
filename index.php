@@ -18,3 +18,6 @@ $route->add('/', 'views/index.php');
 $route->add('/login', 'views/login.php');
 $route->add('/signup', 'views/signup.php');
 $route->add('/profile/{username}', 'views/profile.php');
+
+// Handle not found errors
+$route->notFound('views/errors/404.php');

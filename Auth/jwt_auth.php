@@ -3,9 +3,9 @@
 declare(strict_types=1);
 use Firebase\JWT\JWT;
 
-require_once '../vendor/autoload.php';
-require_once '../secret_key.php';
-require_once '../env.php';
+require_once 'vendor/autoload.php';
+require_once 'secret_key.php';
+require_once 'env.php';
 
 $secret_key = secret_key_generate(32);
 

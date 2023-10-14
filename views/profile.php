@@ -1,5 +1,7 @@
 <?php
-    $username = $req['username'];
+    if (isset($req['username'])) {
+        $username = $req['username'];
+    }
 ?>
 
 <!DOCTYPE html>

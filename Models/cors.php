@@ -1,6 +1,6 @@
 <?php
 // Allow cross-origin requests from any origin
-header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Origin: localhost");
 
 // Allow specific HTTP methods (e.g., GET, POST, OPTIONS)
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, UPDATE, DELETE");

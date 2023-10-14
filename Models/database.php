@@ -10,7 +10,7 @@ class DB
 
     public $conn;
     public $response = [];
-    public $get_last_insert_user;
+    public $get_last_insert;
 
     public function __construct()
     {
@@ -63,13 +63,15 @@ class DB
     }
 
     /**
-     * POST REQUEST TO DATABASE
+     * REGISTER USER REQUEST TO DATABASE
+     * Create new user and POST it to database
+     * Can only be used with REGISTER_USER db method
      **/
-    function POST(string $table, array $data)
+    function REGISTER_USER(array $data)
     {
-        if ((array_key_exists("email", $data) || array_key_exists("user_id", $data)) && $table == "users") {
+        if (array_key_exists("email", $data) || array_key_exists("user_id", $data)) {
             $get_email = $this->GET(
-                $table,
+                'users',
                 "email",
                 "WHERE email = '{$data["email"]}' OR user_id = '{$data["user_id"]}'"
             );
@@ -100,6 +102,78 @@ class DB
         $data_key = substr($data_key, 0, strlen($data_key) - 2);
         $data_value = substr($data_value, 0, strlen($data_value) - 2);
 
+        $sql = "INSERT INTO users (
+            {$data_key}
+        ) VALUES (
+            {$data_value}
+        )";
+
+        if ($this->conn->query($sql)) {
+            $this->get_last_insert = $this->GET('users', "id, user_id, email, reg_date", "WHERE id = {$this->conn->insert_id}");
+
+            $data2 = [];
+            while ($row = $this->get_last_insert['query']->fetch_assoc()) {
+                $data2[] = $row;
+            }
+            
+            // Add a new object to the data array
+            $access_token = ['access_token' => getenv('JWT_SECRET_TOKEN')];
+            $data2[] = $access_token;
+
+            setcookie('user_id', $data['user_id'], time() + 86400, '/');
+            setcookie('access_token', getenv('JWT_SECRET_TOKEN'), time() + 86400, '/');
+            
+
+            // SEND RESPONSE
+            $this->response = [
+                "status" => 200,
+                "statusText" => "OK",
+                "data" => (object) $data2,
+                "message" => "User Registered Successfully.",
+            ];
+
+        } else {
+            $this->response = [
+                "status" => 500,
+                "statusText" => "Server Internal Error",
+                "message" => "Error Occured! Registration Terminated!",
+            ];
+        }
+
+        return $this->response;
+    }
+
+
+    /**
+     * CREATE NEW POST REQUEST TO DATABASE
+     * Insert new data to database info
+     **/
+    function POST(string $table, array $data)
+    {
+        if ($table === "users") {
+            $this->response = [
+                "status" => 400,
+                "statusText" => "Bad Request",
+                "message" => "Can't POST request to users table, use REGISTER USER instead!",
+            ];
+            return $this->response;
+        }
+
+        $data_key = "";
+        $data_value = "";
+        foreach ($data as $key => $value) {
+            if (is_string($value)) {
+                $data_key .= $key . ", ";
+                $data_value .= "'{$value}'" . ", ";
+            } else {
+                $data_key .= $key . ", ";
+                $data_value .= $value . ", ";
+            }
+        }
+
+        $data_key = substr($data_key, 0, strlen($data_key) - 2);
+        $data_value = substr($data_value, 0, strlen($data_value) - 2);
+
         $sql = "INSERT INTO {$table} (
             {$data_key}
         ) VALUES (
@@ -107,16 +181,15 @@ class DB
         )";
 
         if ($this->conn->query($sql)) {
-            $this->get_last_insert_user = $this->GET($table, "id, user_id, email, reg_date", "WHERE id = {$this->conn->insert_id}")["query"]->fetch_assoc();
+            $this->get_last_insert = $this->GET($table, "*", "WHERE id = {$this->conn->insert_id}");
 
+            // SEND RESPONSE
             $this->response = [
                 "status" => 200,
                 "statusText" => "OK",
-                "data" => array_push($this->get_last_insert_user["query"], ['access_token' => getenv('JWT_SECRET_TOKEN')]),
-                "message" => "User Registered Successfully.",
+                "data" => $this->get_last_insert['query']->fetch_assoc(),
+                "message" => "Information Successfully added to database.",
             ];
-
-
         } else {
             $this->response = [
                 "status" => 500,

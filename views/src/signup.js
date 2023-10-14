@@ -12,8 +12,7 @@ form.onsubmit = async function(e) {
     const name = document.getElementById('name');
     const email = document.getElementById('email');
 
-
-    const url = '/auth/jwt_auth.php';
+    const url = '/api/v1/account/register';
 
     /* SEND POST REQUEST TO API */
     const PostRequest = await axios({
@@ -21,9 +20,9 @@ form.onsubmit = async function(e) {
         'method': 'POST',
 
         'data': JSON.stringify({
-            pwd: pwd,
-            name: name,
-            email: email
+            fullname: name.value,
+            email: email.value,
+            password: pwd.value
         }),
         'headers': {
             'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -39,18 +38,31 @@ form.onsubmit = async function(e) {
 
         if (PostRequest.status >= 200 && PostRequest.status <= 299) {
             const jwt = await PostRequest.data;
-            storeJWT.setJWT(jwt);
+            storeJWT.setJWT(jwt.data[1].access_token);
 
-            form.style.display = 'none';
-            getResBtn.style.display = 'block';
+            window.location.href = '/projects/php_router/profile/' + jwt.data[0].user_id;
         }
     } catch (error) {
         console.log(error);
     }
-
-    // Inserts the jwt
 }
 
+function getCookie(cookieName) {
+    const cookies = document.cookie.split('; ');
+
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].split('=');
+        const name = cookie[0];
+        const value = decodeURIComponent(cookie[1]);
+
+        if (name === cookieName) {
+            return value;
+        }
+    }
+    return false;
+}
+
+/*
 getResBtn.addEventListener('click', async(e) => {
     const result = await axios.get('http://localhost/projects/php_router/Auth/resource.php', {
         'headers': {
@@ -59,5 +71,6 @@ getResBtn.addEventListener('click', async(e) => {
     });
 
     const timestamp = await result.data;
-    console.log(timestamp)
-});
+    console.log(timestamp;
+)
+});*/

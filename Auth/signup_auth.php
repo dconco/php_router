@@ -14,11 +14,11 @@ $user_data = [
     "user_id" => $user_id,
     "fullname" => $user["fullname"],
     "email" => base64_encode($user["email"]),
-    "access_key" => base64_encode(getenv('JWT_SECRET_KEY')),
+    "access_token" => getenv('JWT_SECRET_KEY'),
     "password" => password_hash($user["password"], PASSWORD_DEFAULT),
 ];
 
-array_push($jwt_data, ['aud' => $user_data["email"]]);
+$jwt_data['aud'] = $user_data["user_id"];
 
-$send = $db->POST("users", $user_data);
-$response = $send;
+$dbResponse = $db->REGISTER_USER($user_data);
+$response = $dbResponse;
