@@ -107,14 +107,16 @@ class DB
         )";
 
         if ($this->conn->query($sql)) {
-            $this->get_last_insert_user = $this->GET($table, "*", "WHERE id = {$this->conn->insert_id}");
+            $this->get_last_insert_user = $this->GET($table, "id, user_id, email, reg_date", "WHERE id = {$this->conn->insert_id}")["query"]->fetch_assoc();
 
             $this->response = [
                 "status" => 200,
                 "statusText" => "OK",
-                "data" => $this->get_last_insert_user["query"]->fetch_assoc(),
+                "data" => array_push($this->get_last_insert_user["query"], ['access_token' => getenv('JWT_SECRET_TOKEN')]),
                 "message" => "User Registered Successfully.",
             ];
+
+
         } else {
             $this->response = [
                 "status" => 500,

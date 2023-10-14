@@ -13,11 +13,12 @@ for ($i = 0; $i < 2; $i++) {
 $user_data = [
     "user_id" => $user_id,
     "fullname" => $user["fullname"],
-    "email" => $user["email"],
-    "secret_key" => $secret_key,
+    "email" => base64_encode($user["email"]),
+    "access_key" => base64_encode(getenv('JWT_SECRET_KEY')),
     "password" => password_hash($user["password"], PASSWORD_DEFAULT),
 ];
-array_push($jwt_data['data'], ["user_id" => $user_id]);
+
+array_push($jwt_data, ['aud' => $user_data["email"]]);
 
 $send = $db->POST("users", $user_data);
 $response = $send;
