@@ -1,37 +1,63 @@
-let btn = document.querySelector('button');
+const storeJWT = {};
+const form = document.forms[0];
+
+const getResBtn = document.querySelector('#getRes');
+getResBtn.style.display = 'none';
 
 /* IF SUBMIT BUTTON IS CLICKED */
-btn.onclick = async function(e) {
+form.onsubmit = async function(e) {
     e.preventDefault();
 
-    let form = document.querySelector('form');
+    const pwd = document.getElementById('pwd');
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
 
-    let pwd = document.getElementById('pwd');
-    let name = document.getElementById('name');
-    let email = document.getElementById('email');
 
-    // if fields are empty
-    if (pwd.value === "" || name.value === "" || email.value === "") {
-        alert("All fields are required!");
-        return;
-    }
-
-    let formData = new FormData(form);
-    const url = '/api/v1/account/register';
-
+    const url = '/auth/jwt_auth.php';
 
     /* SEND POST REQUEST TO API */
     const PostRequest = await axios({
-        'method': 'POST',
-        'data': formData,
         'url': url,
+        'method': 'POST',
+
+        'data': JSON.stringify({
+            pwd: pwd,
+            name: name,
+            email: email
+        }),
+        'headers': {
+            'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+        },
         'baseURL': 'http://localhost/projects/php_router'
     });
 
-    console.log(PostRequest.data);
+    try {
+        // to the storeJWT object
+        storeJWT.setJWT = function(data) {
+            this.JWT = data;
+        }
 
-    if (PostRequest.status == 200 && PostRequest.statusText == "OK") {
-        const Inputs = document.querySelectorAll('input');
-        Inputs.forEach(values => values.value = "");
+        if (PostRequest.status >= 200 && PostRequest.status <= 299) {
+            const jwt = await PostRequest.data;
+            storeJWT.setJWT(jwt);
+
+            form.style.display = 'none';
+            getResBtn.style.display = 'block';
+        }
+    } catch (error) {
+        console.log(error);
     }
+
+    // Inserts the jwt
 }
+
+getResBtn.addEventListener('click', async(e) => {
+    const result = await axios.get('http://localhost/projects/php_router/Auth/resource.php', {
+        'headers': {
+            'Authorization': `Bearer ${storeJWT.JWT}`
+        }
+    });
+
+    const timestamp = await result.data;
+    console.log(timestamp)
+});

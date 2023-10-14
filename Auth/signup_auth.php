@@ -1,4 +1,7 @@
 <?php
+
+include_once 'Auth/jwt_auth.php';
+
 $db = new DB();
 
 $user_id = "";
