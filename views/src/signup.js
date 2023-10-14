@@ -25,7 +25,7 @@ form.onsubmit = async function(e) {
             password: pwd.value
         }),
         'headers': {
-            'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            'Content-type': 'Application/json'
         },
         'baseURL': 'http://localhost/projects/php_router'
     });

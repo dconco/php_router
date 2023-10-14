@@ -1,43 +1,66 @@
 <?php
 
+session_start();
+
 declare(strict_types=1);
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
 chdir(dirname(__DIR__));
 
-require_once('./vendor/autoload.php');
-require_once('./secret_key.php');
+require_once './vendor/autoload.php';
+require_once './Models/database.php';
+require_once './secret_key.php';
+require_once './env.php';
 
-if (! preg_match('/Bearer\s(\S+)/', $_SERVER['HTTP_AUTHORIZATION'], $matches)) 
+// CHECK IF ACCESS TOKEN IS SET
+$response = [];
+
+if (!isset($_COOKIE['access_token'])) 
+{ //if token is not set
+    $response = [
+        'status' => 401,
+        'statusText' => 'Unauthorized',
+        'message' => 'User is not authorized to access this function or page.'
+    ];
+    
+    // header('location: /projects/php_router/login');
+    return $response;
+} 
+else
 {
-    header('HTTP/1.0 400 Bad Request');
-    echo 'Token not found in request';
-    exit;
+    $user_id = $_SESSION['user_id'] = $_COOKIE['user_id'];
+    $access_token = $_SESSION['access_token'] = $_COOKIE['access_token'];
 }
 
-$jwt = $matches[1];
+$db = new DB();
+$user_query = $db->GET("users", "access_token", "WHERE user_id=$user_id");
+$user = $user_query['query']->fetch_object();
 
-if (!$jwt) 
+$decodedToken = JWT::decode(
+    $access_token, 
+    new Key($user->access_token, 'HS512')
+);
+
+$now = new DateTimeImmutable();
+
+if ($decodedToken->iss !== getenv('SERVER') || $decodedToken->aud !== $user->email || $decodedToken->nbf > $now->getTimestamp() || $decodedToken->exp < $now->getTimestamp()) 
 {
-    // No token was able to be extracted from the authorization header
-    header('HTTP/1.0 400 Bad Request');
-    exit;
+    $response = [
+        'status' => 403,
+        'statusText' => 'Forbidden',
+        'message' => 'Invalid or Expired Token.'
+    ];
+
+    return $response;
 }
 else 
 {
-    $secretKey = 'bGS6lzFqvvSQ8ALbOxatm7/Vk7mLQyzqaS34Q4oR1ew=';
-    $decodedToken = JWT::decode(
-        $jwt, 
-        new Key($secretKey, 'HS512')
-    );
-    
-    $now = new DateTimeImmutable();
-    $server_url = 'localhost';
+    $response = [
+        'status' => 200,
+        'statusText' => 'OK',
+        'message' => 'User is authorized'
+    ];
 
-    if ($decodedToken->iss !== $server_url || $decodedToken->nbf > $now->getTimestamp() || $decodedToken->exp < $now->getTimestamp()) 
-    {
-        header('HTTP/1.0 401 Unauthorized');
-        exit;
-    }
+    return $response;
 }

@@ -16,7 +16,13 @@ class DB
     {
         try {
             session_start();
-            $this->conn = new mysqli("localhost", "root", "", "react_blog");
+
+            $db_host = getenv('DB_HOST');
+            $db_user = getenv('DB_USER');
+            $db_pass = getenv('DB_PASS');
+            $db_base = getenv('DB_BASE');
+
+            $this->conn = new mysqli($db_host, $db_user, $db_pass, $db_base);
         } catch (error) {
             http_response_code(1001);
             exit("Connection Refused!");
@@ -26,7 +32,7 @@ class DB
     /**
      * GET REQUEST FROM DATABASE
      **/
-    function GET(string $table, string $data = "*", string $option)
+    function GET(string $table, string $data, $where='', $join='', $limit='', $order_by='')
     {
         if (empty($table)) {
             $this->response = [
@@ -38,11 +44,12 @@ class DB
             return $this->response;
         }
 
-        if (empty($data)) {
-            $sql = "SELECT * FROM {$table} {$option}";
-        } else {
-            $sql = "SELECT {$data} FROM {$table} {$option}";
-        }
+        $sql = "SELECT {$data} FROM {$table}";
+
+        !empty($where) && $sql .= " WHERE $where";
+        !empty($join) && $sql .= " JOIN $join";
+        !empty($limit) && $sql .= " LIMIT $limit";
+        !empty($order_by) && $sql .= " ORDER BY $order_by";
 
         if ($this->conn->query($sql)) {
             $this->response = [
@@ -70,11 +77,7 @@ class DB
     function REGISTER_USER(array $data)
     {
         if (array_key_exists("email", $data) || array_key_exists("user_id", $data)) {
-            $get_email = $this->GET(
-                'users',
-                "email",
-                "WHERE email = '{$data["email"]}' OR user_id = '{$data["user_id"]}'"
-            );
+            $get_email = $this->GET("users", "email", "email = '{$data["email"]}' OR user_id = '{$data["user_id"]}'");
 
             if ($get_email["query"]->num_rows > 0) {
                 $this->response = [
@@ -109,7 +112,7 @@ class DB
         )";
 
         if ($this->conn->query($sql)) {
-            $this->get_last_insert = $this->GET('users', "id, user_id, email, reg_date", "WHERE id = {$this->conn->insert_id}");
+            $this->get_last_insert = $this->GET("users", "id, user_id, email, reg_date", "id = {$this->conn->insert_id}");
 
             $data2 = [];
             while ($row = $this->get_last_insert['query']->fetch_assoc()) {
