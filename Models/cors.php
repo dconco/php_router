@@ -6,7 +6,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, UPDATE, DELETE");
 
 // Allow specific HTTP headers
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization");
 
 //Handle preflight requests (OPTIONS method)
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {

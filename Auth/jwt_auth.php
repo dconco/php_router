@@ -12,7 +12,6 @@ $date = new DateTimeImmutable();
 
 $expire_at = $date->modify('+6 minutes')->getTimestamp();
 $server_url = 'localhost';
-$username = 'username';
 
 $jwt_data = [
     'iss' => $server_url,
