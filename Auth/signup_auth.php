@@ -1,13 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use Api\Endpoint;
 use JWT\Token\Token;
-
-include_once 'Token.php';
-require_once 'vendor/autoload.php';
-require_once 'secret_key.php';
-require_once 'env.php';
-
 
 $db = new DB();
 
@@ -34,4 +29,4 @@ $user_data = [
 ];
 
 $dbResponse = $db->REGISTER_USER($user_data);
-$response = $dbResponse;
+Endpoint::$response = $dbResponse;

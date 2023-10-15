@@ -7,14 +7,17 @@ use DateTimeImmutable;
 /**
  * HANDLING JWT WEB TOKEN
  * Create new JWT web token for use
- * Verify token 
+ * Verify token
+ * 
+ * @author DaveConco <concodave@gmail.com>
+ * @method array create()
  */
 
 class Token {
     /**
      * Create new JWT Web Token
      */
-    static function create(array $data) {
+    static function create(array $data = []) {
         $secret_key = secret_key_generate(32);
 
         $date = new DateTimeImmutable();
