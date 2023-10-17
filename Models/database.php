@@ -4,14 +4,14 @@
  */
 class DB
 {
-    /**
-     * CONNECTION TO DATABASE
-     **/
-
+    
     public $conn;
     public $response = [];
     public $get_last_insert;
-
+    
+    /**
+     * CONNECTION TO DATABASE
+     **/
     public function __construct()
     {
         try {
@@ -23,11 +23,17 @@ class DB
             $db_base = getenv('DB_BASE');
 
             $this->conn = new mysqli($db_host, $db_user, $db_pass, $db_base);
+
+            if ($this->conn->connect_error) {
+                http_response_code(1001);
+                exit("Connection Refused!");
+            }
         } catch (error) {
             http_response_code(1001);
             exit("Connection Refused!");
         }
     }
+
 
     /**
      * GET REQUEST FROM DATABASE
@@ -90,28 +96,28 @@ class DB
             }
         }
 
-        $data_key = "";
-        $data_value = "";
+        $values = [];
+        $data_key = '';
+        $data_value = '';
+        $data_types = '';
+
+        // Loop through the given user info in the array
         foreach ($data as $key => $value) {
-            if (is_string($value)) {
-                $data_key .= $key . ", ";
-                $data_value .= "'{$value}'" . ", ";
-            } else {
-                $data_key .= $key . ", ";
-                $data_value .= $value . ", ";
-            }
+            $data_key .= $key . ', ';
+            $data_value .= '?, ';
+            $data_types .= 's';
+            array_push($values, $value);
         }
 
         $data_key = substr($data_key, 0, strlen($data_key) - 2);
         $data_value = substr($data_value, 0, strlen($data_value) - 2);
+        $data_types = substr($data_types, 0, strlen($data_types) - 1);
 
-        $sql = "INSERT INTO users (
-            {$data_key}
-        ) VALUES (
-            {$data_value}
-        )";
+        // Prepare and Bind
+        $stmt = $this->conn->prepare("INSERT INTO users ($data_key) VALUES ($data_value)");
+        $stmt->bind_param("i$data_types", ...$values);
 
-        if ($this->conn->query($sql)) {
+        if ($stmt->execute()) {
             $this->get_last_insert = $this->GET("users", "id, user_id, email, reg_date", "id = {$this->conn->insert_id}");
 
             $data2 = [];
@@ -143,6 +149,7 @@ class DB
             ];
         }
 
+        $stmt->close();
         return $this->response;
     }
 

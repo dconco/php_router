@@ -10,26 +10,28 @@ namespace Api;
  * @method mixed $response
  * @method mixed Register()
  * @method mixed Login()
+ * @method mixed Logout()
+ * @method mixed Profile()
  */
 class Endpoint {
 
-    static $method = $_SERVER['REQUEST_METHOD'];
-    static $response = [];
+    private static $method = REQUEST_METHOD;
+    private static $response = [];
 
     /**
      * REGISTER ENDPOINT
      */
-    static function Register() {
+    public static function Register() {
 
-        if (Endpoint::$method !== 'POST') 
+        if (self::$method !== 'POST') 
         {
-            Endpoint::$response = [
+            self::$response = [
                 'status' => 405,
                 'statusText' => 'Method Not Allowed',
                 'message' => 'The method used in the request is not allowed for the resource.',
             ];
         }
-        else 
+        else
         {
             /* MAIN ENDPOINT */
             $req_data = json_decode(file_get_contents('php://input'), true);
@@ -37,7 +39,7 @@ class Endpoint {
             if ((empty($req_data['fullname']) || empty($req_data['email']) || empty($req_data['password'])) || 
                 strlen($req_data['password']) < 5 || !filter_var($req_data['email'], FILTER_VALIDATE_EMAIL)) 
             {
-                Endpoint::$response = [
+                self::$response = [
                     'status' => 400,
                     'statusText' => 'Bad Request',
                     'message' => 'Invalid Request Body',
@@ -56,9 +58,9 @@ class Endpoint {
         }
 
         /* RETURN RESPONSE TEXT */
-        header('HTTP/1.1 ' . Endpoint::$response['status'] . ' ' . Endpoint::$response['statusText']);
+        header('HTTP/1.1 ' . self::$response['status'] . ' ' . self::$response['statusText']);
 
-        $res = json_encode(Endpoint::$response);
+        $res = json_encode(self::$response);
         return $res;
     }
     // END REGISTER ENDPOINT
@@ -67,11 +69,11 @@ class Endpoint {
     /**
      * LOGIN ENDPOINT
      */
-    static function Login() {
+    public static function Login() {
         
-        if (Endpoint::$method !== 'POST') 
+        if (self::$method !== 'POST') 
         {
-            Endpoint::$response = [
+            self::$response = [
                 'status' => 405,
                 'statusText' => 'Method Not Allowed',
                 'message' => 'The method used in the request is not allowed for the resource.',
@@ -86,7 +88,7 @@ class Endpoint {
                 empty($req_data['email']) ||
                 empty($req_data['password'])
             ) {
-                Endpoint::$response = [
+                self::$response = [
                     'status' => 400,
                     'statusText' => 'Bad Request',
                     'message' => 'Invalid Request Body',
@@ -102,21 +104,52 @@ class Endpoint {
         }
 
         /* RETURN RESPONSE TEXT */
-        header('HTTP/1.1 ' . Endpoint::$response['status'] . ' ' . Endpoint::$response['statusText']);
+        header('HTTP/1.1 ' . self::$response['status'] . ' ' . self::$response['statusText']);
 
-        $res = json_encode(Endpoint::$response);
+        $res = json_encode(self::$response);
         return $res;
     }
     // END LOGIN ENDPOINT
+    
+    
+    /**
+     * LOGOUT ENDPOINT
+     */
+    public static function Logout() {
+        session_start();
+        session_destroy();
+        
+        if (isset($_COOKIE["user_id"])) {
+            setcookie('user_id', '', time() - (86400 * 30), '/');
+            header("location: ./login.php");
+        }
+        if (isset($_COOKIE["access_token"])) {
+            setcookie('access_token', '', time() - (86400 * 30), '/');
+            header("location: ./login.php");
+        }
+
+        self::$response = [
+            'status' => 200,
+            'statusText' => 'OK',
+            'message' => 'User Logged out success.',
+        ];
+        
+        /* RETURN RESPONSE TEXT */
+        header('HTTP/1.1 ' . self::$response['status'] . ' ' . self::$response['statusText']);
+
+        $res = json_encode(self::$response);
+        return $res;
+    }
+    // END LOGOUT ENDPOINT
 
 
     /**
      * PROFILE INFO ENDPOINT
      */
-    static function Profile() {
-        if (Endpoint::$method !== "GET") 
+    public static function Profile() {
+        if (self::$method !== "GET") 
         {
-            Endpoint::$response = [
+            self::$response = [
                 "status" => 405,
                 "statusText" => "Method Not Allowed",
                 "message" => "The method used in the request is not allowed for the resource.",
@@ -124,15 +157,15 @@ class Endpoint {
         }
         else
         {
-
+            global $req;
             $req_id = $req['user_id'];
             include_once 'Auth/profile_auth.php';
         }
         
         /* RETURN RESPONSE TEXT */
-        header('HTTP/1.1 ' . Endpoint::$response['status'] . ' ' . Endpoint::$response['statusText']);
+        header('HTTP/1.1 ' . self::$response['status'] . ' ' . self::$response['statusText']);
 
-        $res = json_encode(Endpoint::$response);
+        $res = json_encode(self::$response);
         return $res;
     }
     // END PROFILE ENDPOINT 

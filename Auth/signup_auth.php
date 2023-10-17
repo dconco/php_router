@@ -1,18 +1,11 @@
 <?php
 
-declare(strict_types=1);
-use Api\Endpoint;
 use JWT\Token\Token;
 
 $db = new DB();
 
-$user_id = "";
+$user_id = rand(time(), 99999999) . rand(99999999, time());
 $user_email = base64_encode($user["email"]);
-
-for ($i = 0; $i < 2; $i++) {
-    $id = rand(time(), 99999999);
-    $user_id .= $id;
-}
 
 $data = [
     'email' => $user_email
@@ -29,4 +22,4 @@ $user_data = [
 ];
 
 $dbResponse = $db->REGISTER_USER($user_data);
-Endpoint::$response = $dbResponse;
+self::$response = $dbResponse;

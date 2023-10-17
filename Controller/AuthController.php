@@ -11,7 +11,7 @@ chdir(dirname(__DIR__));
 require_once './vendor/autoload.php';
 require_once './Models/database.php';
 require_once './secret_key.php';
-require_once './env.php';
+require_once './env.config.php';
 
 // CHECK IF ACCESS TOKEN IS SET
 $response = [];
