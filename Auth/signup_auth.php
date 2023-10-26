@@ -4,7 +4,7 @@ use JWT\Token\Token;
 
 $db = new DB();
 
-$user_id = rand(time(), 99999999) . rand(99999999, time());
+$user_id    = rand(time(), 99999999) . rand(99999999, time());
 $user_email = base64_encode($user["email"]);
 
 $data = [
@@ -21,5 +21,5 @@ $user_data = [
     "password" => password_hash($user["password"], PASSWORD_DEFAULT),
 ];
 
-$dbResponse = $db->REGISTER_USER($user_data);
+$dbResponse     = $db->REGISTER_USER($user_data);
 self::$response = $dbResponse;

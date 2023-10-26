@@ -1,7 +1,9 @@
 <?php
 
 namespace JWT\Token;
+
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use DateTimeImmutable;
 
 /**
@@ -13,11 +15,13 @@ use DateTimeImmutable;
  * @method array create()
  */
 
-class Token {
+class Token
+{
     /**
      * Create new JWT Web Token
      */
-    static function create(array $data = []) {
+    static function create(array $data = [])
+    {
         $secret_key = secret_key_generate(32);
 
         $date = new DateTimeImmutable();
@@ -25,9 +29,8 @@ class Token {
         $expire_at = $date->modify('+6 minutes')->getTimestamp();
 
         $jwt_data = [
-            'iss' => getenv('SERVER_HOST'),
+            'iss' => getenv('APP_SERVER'),
             'iat' => $date->getTimestamp(),
-            'nbf' => $date->getTimestamp(),
             'exp' => $expire_at,
             'data' => $data
         ];
@@ -45,6 +48,7 @@ class Token {
             'access_token' => $token,
             'access_key' => $secret_key
         ];
+
         return $token_info;
     }
 
@@ -53,4 +57,32 @@ class Token {
      * Verify JWT Web Token
      * Check if the user is authenticated
      */
+    static function verify($access_token, $secret_key, $email)
+    {
+        $decodedToken = JWT::decode(
+            $access_token,
+            new Key($secret_key, 'HS512')
+        );
+
+        $now = new DateTimeImmutable();
+
+        if ($decodedToken->iss !== getenv('APP_SERVER') || $decodedToken->data->email !== $email || $decodedToken->iat > $now->getTimestamp() || $decodedToken->exp < $now->getTimestamp())
+        {
+            $response = [
+                'status' => 403,
+                'statusText' => 'Forbidden',
+                'message' => 'Invalid or Expired Token.'
+            ];
+
+            return $response;
+        }
+
+        $response = [
+            'status' => 200,
+            'statusText' => 'OK',
+            'message' => 'User is authorized'
+        ];
+
+        return $response;
+    }
 }

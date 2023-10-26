@@ -4,17 +4,18 @@
  */
 class DB
 {
-    
+
     public $conn;
     public $response = [];
     public $get_last_insert;
-    
+
     /**
      * CONNECTION TO DATABASE
      **/
     public function __construct()
     {
-        try {
+        try
+        {
             session_start();
 
             $db_host = getenv('DB_HOST');
@@ -24,13 +25,16 @@ class DB
 
             $this->conn = new mysqli($db_host, $db_user, $db_pass, $db_base);
 
-            if ($this->conn->connect_error) {
+            if ($this->conn->connect_error)
+            {
                 http_response_code(1001);
                 exit("Connection Refused!");
             }
-        } catch (error) {
+        }
+        catch (Exception $e)
+        {
             http_response_code(1001);
-            exit("Connection Refused!");
+            exit("Connection Refused! " . $e);
         }
     }
 
@@ -38,9 +42,10 @@ class DB
     /**
      * GET REQUEST FROM DATABASE
      **/
-    function GET(string $table, string $data, $where='', $join='', $limit='', $order_by='')
+    function GET(string $table, string $data, $where = '', $join = '', $limit = '', $order_by = '')
     {
-        if (empty($table)) {
+        if (empty($table))
+        {
             $this->response = [
                 "status" => 400,
                 "statusText" => "Bad Request",
@@ -57,14 +62,17 @@ class DB
         !empty($limit) && $sql .= " LIMIT $limit";
         !empty($order_by) && $sql .= " ORDER BY $order_by";
 
-        if ($this->conn->query($sql)) {
+        if ($this->conn->query($sql))
+        {
             $this->response = [
                 "status" => 200,
                 "statusText" => "OK",
                 "query" => $this->conn->query($sql),
                 "message" => "Successfully Get Requested Users.",
             ];
-        } else {
+        }
+        else
+        {
             $this->response = [
                 "status" => 500,
                 "statusText" => "Server Internal Error",
@@ -82,10 +90,12 @@ class DB
      **/
     function REGISTER_USER(array $data)
     {
-        if (array_key_exists("email", $data) || array_key_exists("user_id", $data)) {
+        if (array_key_exists("email", $data) || array_key_exists("user_id", $data))
+        {
             $get_email = $this->GET("users", "email", "email = '{$data["email"]}' OR user_id = '{$data["user_id"]}'");
 
-            if ($get_email["query"]->num_rows > 0) {
+            if ($get_email["query"]->num_rows > 0)
+            {
                 $this->response = [
                     "status" => 403,
                     "statusText" => "Forbidden",
@@ -96,20 +106,21 @@ class DB
             }
         }
 
-        $values = [];
-        $data_key = '';
+        $values     = [];
+        $data_key   = '';
         $data_value = '';
         $data_types = '';
 
         // Loop through the given user info in the array
-        foreach ($data as $key => $value) {
+        foreach ($data as $key => $value)
+        {
             $data_key .= $key . ', ';
             $data_value .= '?, ';
             $data_types .= 's';
             array_push($values, $value);
         }
 
-        $data_key = substr($data_key, 0, strlen($data_key) - 2);
+        $data_key   = substr($data_key, 0, strlen($data_key) - 2);
         $data_value = substr($data_value, 0, strlen($data_value) - 2);
         $data_types = substr($data_types, 0, strlen($data_types) - 1);
 
@@ -117,21 +128,16 @@ class DB
         $stmt = $this->conn->prepare("INSERT INTO users ($data_key) VALUES ($data_value)");
         $stmt->bind_param("i$data_types", ...$values);
 
-        if ($stmt->execute()) {
+        if ($stmt->execute())
+        {
             $this->get_last_insert = $this->GET("users", "id, user_id, email, reg_date", "id = {$this->conn->insert_id}");
 
-            $data2 = [];
-            while ($row = $this->get_last_insert['query']->fetch_assoc()) {
-                $data2[] = $row;
-            }
-            
-            // Add a new object to the data array
-            $access_token = ['access_token' => getenv('JWT_SECRET_TOKEN')];
-            $data2[] = $access_token;
+            $access_token = [ 'access_token' => getenv('JWT_SECRET_TOKEN') ];
+            $data2        = array_merge($this->get_last_insert['query']->fetch_assoc(), $access_token);
 
             setcookie('user_id', $data['user_id'], time() + 86400, '/');
             setcookie('access_token', getenv('JWT_SECRET_TOKEN'), time() + 86400, '/');
-            
+
 
             // SEND RESPONSE
             $this->response = [
@@ -141,7 +147,9 @@ class DB
                 "message" => "User Registered Successfully.",
             ];
 
-        } else {
+        }
+        else
+        {
             $this->response = [
                 "status" => 500,
                 "statusText" => "Server Internal Error",
@@ -160,7 +168,8 @@ class DB
      **/
     function POST(string $table, array $data)
     {
-        if ($table === "users") {
+        if ($table === "users")
+        {
             $this->response = [
                 "status" => 400,
                 "statusText" => "Bad Request",
@@ -169,19 +178,23 @@ class DB
             return $this->response;
         }
 
-        $data_key = "";
+        $data_key   = "";
         $data_value = "";
-        foreach ($data as $key => $value) {
-            if (is_string($value)) {
+        foreach ($data as $key => $value)
+        {
+            if (is_string($value))
+            {
                 $data_key .= $key . ", ";
                 $data_value .= "'{$value}'" . ", ";
-            } else {
+            }
+            else
+            {
                 $data_key .= $key . ", ";
                 $data_value .= $value . ", ";
             }
         }
 
-        $data_key = substr($data_key, 0, strlen($data_key) - 2);
+        $data_key   = substr($data_key, 0, strlen($data_key) - 2);
         $data_value = substr($data_value, 0, strlen($data_value) - 2);
 
         $sql = "INSERT INTO {$table} (
@@ -190,7 +203,8 @@ class DB
             {$data_value}
         )";
 
-        if ($this->conn->query($sql)) {
+        if ($this->conn->query($sql))
+        {
             $this->get_last_insert = $this->GET($table, "*", "WHERE id = {$this->conn->insert_id}");
 
             // SEND RESPONSE
@@ -200,7 +214,9 @@ class DB
                 "data" => $this->get_last_insert['query']->fetch_assoc(),
                 "message" => "Information Successfully added to database.",
             ];
-        } else {
+        }
+        else
+        {
             $this->response = [
                 "status" => 500,
                 "statusText" => "Server Internal Error",
