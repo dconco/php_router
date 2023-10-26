@@ -5,6 +5,7 @@ namespace JWT\Token;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use DateTimeImmutable;
+use Exception;
 
 /**
  * HANDLING JWT WEB TOKEN
@@ -26,7 +27,7 @@ class Token
 
         $date = new DateTimeImmutable();
 
-        $expire_at = $date->modify('+6 minutes')->getTimestamp();
+        $expire_at = $date->modify('+24 hours')->getTimestamp();
 
         $jwt_data = [
             'iss' => getenv('APP_SERVER'),
@@ -59,30 +60,43 @@ class Token
      */
     static function verify($access_token, $secret_key, $email)
     {
-        $decodedToken = JWT::decode(
-            $access_token,
-            new Key($secret_key, 'HS512')
-        );
-
-        $now = new DateTimeImmutable();
-
-        if ($decodedToken->iss !== getenv('APP_SERVER') || $decodedToken->data->email !== $email || $decodedToken->iat > $now->getTimestamp() || $decodedToken->exp < $now->getTimestamp())
+        try
         {
+            $decodedToken = JWT::decode(
+                $access_token,
+                new Key($secret_key, 'HS512')
+            );
+
+            $now = new DateTimeImmutable();
+
+            if ($decodedToken->iss !== getenv('APP_SERVER') || $decodedToken->data->email !== $email || $decodedToken->iat > $now->getTimestamp() || $decodedToken->exp < $now->getTimestamp())
+            {
+                $response = [
+                    'status' => 403,
+                    'statusText' => 'Forbidden',
+                    'message' => 'Invalid or Expired Token.'
+                ];
+
+                return $response;
+            }
+
             $response = [
-                'status' => 403,
-                'statusText' => 'Forbidden',
-                'message' => 'Invalid or Expired Token.'
+                'status' => 200,
+                'statusText' => 'OK',
+                'message' => 'User is authorized'
             ];
 
             return $response;
         }
+        catch (Exception $e)
+        {
+            $response = [
+                'status' => 500,
+                'statusText' => 'Internal Server Error',
+                'message' => $e->getMessage()
+            ];
 
-        $response = [
-            'status' => 200,
-            'statusText' => 'OK',
-            'message' => 'User is authorized'
-        ];
-
-        return $response;
+            return $response;
+        }
     }
 }

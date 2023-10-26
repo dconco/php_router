@@ -35,8 +35,6 @@
         </div>
     </form>
 
-    <button id="getRes">GET RESOURCES</button>
-
 
     <!-- JAVASCRIPT LINKS-->
     <script src="views/src/axios/axios.min.js"></script>

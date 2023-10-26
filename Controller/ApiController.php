@@ -133,16 +133,8 @@ class Endpoint
             session_start();
             session_destroy();
 
-            if (isset($_COOKIE["user_id"]))
-            {
-                setcookie('user_id', '', time() - (86400 * 30), '/');
-                header("location: ./login.php");
-            }
-            if (isset($_COOKIE["access_token"]))
-            {
-                setcookie('access_token', '', time() - (86400 * 30), '/');
-                header("location: ./login.php");
-            }
+            setcookie('user_id', '', time() - (86400 * 30), '/');
+            setcookie('access_token', '', time() - (86400 * 30), '/');
 
             self::$response = [
                 'status' => 200,
@@ -162,8 +154,9 @@ class Endpoint
 
     /**
      * PROFILE INFO ENDPOINT
+     * Get other users profile details, and get logged-in user details
      */
-    public static function Profile()
+    public static function Profile($user_id)
     {
         if (self::$method !== "GET")
         {
@@ -175,9 +168,25 @@ class Endpoint
         }
         else
         {
-            global $req;
-            $req_id = $req['user_id'];
-            include_once 'Auth/profile_auth.php';
+            $user_id = (int) $user_id;
+
+            if ($user_id == $_SESSION['user_id'])
+            { // user_id is logged-in user
+                include_once 'Controller/AuthController.php';
+
+                if ($response['status'] === 200)
+                {
+                    include_once 'Auth/profile_auth.php';
+                }
+                else
+                {
+                    self::$response = $response;
+                }
+            }
+            else
+            {
+                // include_once 'Auth/get_user_auth.php';
+            }
         }
 
         /* RETURN RESPONSE TEXT */

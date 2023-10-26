@@ -16,8 +16,6 @@ class DB
     {
         try
         {
-            session_start();
-
             $db_host = getenv('DB_HOST');
             $db_user = getenv('DB_USER');
             $db_pass = getenv('DB_PASS');
@@ -34,7 +32,7 @@ class DB
         catch (Exception $e)
         {
             http_response_code(1001);
-            exit("Connection Refused! " . $e);
+            exit("Connection Refused! " . $e->getMessage());
         }
     }
 
@@ -62,25 +60,31 @@ class DB
         !empty($limit) && $sql .= " LIMIT $limit";
         !empty($order_by) && $sql .= " ORDER BY $order_by";
 
-        if ($this->conn->query($sql))
+        try
         {
-            $this->response = [
-                "status" => 200,
-                "statusText" => "OK",
-                "query" => $this->conn->query($sql),
-                "message" => "Successfully Get Requested Users.",
-            ];
+            $query = $this->conn->query($sql);
+            if ($query == true)
+            {
+                $this->response = [
+                    "status" => 200,
+                    "statusText" => "OK",
+                    "query" => $query,
+                    "message" => "Successfully Get Requested Users."
+                ];
+            }
         }
-        else
+        catch (Exception $e)
         {
             $this->response = [
                 "status" => 500,
-                "statusText" => "Server Internal Error",
-                "message" => "Error Occured! Get Request Terminated!",
+                "statusText" => "Internal Server Error",
+                "message" => $e->getMessage()
             ];
         }
-
-        return $this->response;
+        finally
+        {
+            return $this->response;
+        }
     }
 
     /**
@@ -128,37 +132,45 @@ class DB
         $stmt = $this->conn->prepare("INSERT INTO users ($data_key) VALUES ($data_value)");
         $stmt->bind_param("i$data_types", ...$values);
 
-        if ($stmt->execute())
+        try
         {
-            $this->get_last_insert = $this->GET("users", "id, user_id, email, reg_date", "id = {$this->conn->insert_id}");
+            $exec = $stmt->execute();
 
-            $access_token = [ 'access_token' => getenv('JWT_SECRET_TOKEN') ];
-            $data2        = array_merge($this->get_last_insert['query']->fetch_assoc(), $access_token);
+            if ($exec == true)
+            {
+                $this->get_last_insert = $this->GET("users", "id, user_id, fullname, email, reg_date", "id = {$this->conn->insert_id}");
 
-            setcookie('user_id', $data['user_id'], time() + 86400, '/');
-            setcookie('access_token', getenv('JWT_SECRET_TOKEN'), time() + 86400, '/');
+                $access_token = [ 'access_token' => getenv('JWT_SECRET_TOKEN') ];
+                $data2        = array_merge($this->get_last_insert['query']->fetch_assoc(), $access_token);
+
+                $_SESSION['user_id'] = $data['user_id'];
+                setcookie('user_id', $data['user_id'], time() + 86400, '/');
+                setcookie('access_token', getenv('JWT_SECRET_TOKEN'), time() + 86400, '/');
 
 
-            // SEND RESPONSE
-            $this->response = [
-                "status" => 200,
-                "statusText" => "OK",
-                "data" => (object) $data2,
-                "message" => "User Registered Successfully.",
-            ];
+                // SEND RESPONSE
+                $this->response = [
+                    "status" => 200,
+                    "statusText" => "OK",
+                    "data" => (object) $data2,
+                    "message" => "User Registered Successfully.",
+                ];
 
+                $stmt->close();
+            }
         }
-        else
+        catch (Exception $e)
         {
             $this->response = [
                 "status" => 500,
                 "statusText" => "Server Internal Error",
-                "message" => "Error Occured! Registration Terminated!",
+                "message" => $e->getMessage(),
             ];
         }
-
-        $stmt->close();
-        return $this->response;
+        finally
+        {
+            return $this->response;
+        }
     }
 
 
@@ -203,28 +215,36 @@ class DB
             {$data_value}
         )";
 
-        if ($this->conn->query($sql))
-        {
-            $this->get_last_insert = $this->GET($table, "*", "WHERE id = {$this->conn->insert_id}");
 
-            // SEND RESPONSE
-            $this->response = [
-                "status" => 200,
-                "statusText" => "OK",
-                "data" => $this->get_last_insert['query']->fetch_assoc(),
-                "message" => "Information Successfully added to database.",
-            ];
+        try
+        {
+            $query = $this->conn->query($sql);
+
+            if ($query == true)
+            {
+                $this->get_last_insert = $this->GET($table, "*", "id = {$this->conn->insert_id}");
+
+                // SEND RESPONSE
+                $this->response = [
+                    "status" => 200,
+                    "statusText" => "OK",
+                    "data" => $this->get_last_insert['query']->fetch_assoc(),
+                    "message" => "Information Successfully added to database.",
+                ];
+            }
         }
-        else
+        catch (Exception $e)
         {
             $this->response = [
                 "status" => 500,
-                "statusText" => "Server Internal Error",
-                "message" => "Error Occured! Registration Terminated!",
+                "statusText" => "Internal Server Error",
+                "message" => $e->getMessage(),
             ];
         }
-
-        return $this->response;
+        finally
+        {
+            return $this->response;
+        }
     }
 
     function UPDATE(string $table, array $data, array $option)
@@ -238,8 +258,8 @@ class DB
     /**
      * GET ALL USERS FROM DATABASE
      **/
-    function GET_USERS(string $option = "WHERE id=1")
+    function GET_USERS(string $option = "id=1")
     {
-        return $this->GET("users", "", $option);
+        return $this->GET("users", "*", $option);
     }
 }

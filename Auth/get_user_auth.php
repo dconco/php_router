@@ -1,12 +1,14 @@
 <?php
-$db = new DB();
-$get_req = $db->GET_USERS("WHERE user_id = '{$get_id}'");
+$db      = new DB();
+$get_req = $db->GET_USERS("user_id = '{$get_id}'");
 
-$data = [];
+$data     = [];
 $response = [];
 
-if (array_key_exists("query", $get_req)) {
-    if ($get_req["query"]->num_rows > 0) {
+if (array_key_exists("query", $get_req))
+{
+    if ($get_req["query"]->num_rows > 0)
+    {
         $res = $get_req["query"]->fetch_assoc();
 
         $data = [
@@ -15,7 +17,9 @@ if (array_key_exists("query", $get_req)) {
             "data" => $res,
             "message" => "Get User Request Successfull.",
         ];
-    } else {
+    }
+    else
+    {
         $res = "No User Found as $get_id";
 
         $data = [
@@ -26,6 +30,8 @@ if (array_key_exists("query", $get_req)) {
     }
 
     $response = $data;
-} else {
+}
+else
+{
     $response = $get_req;
 }
