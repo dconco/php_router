@@ -1,24 +1,39 @@
 <?php
 
-require_once 'vendor/autoload.php';
-require_once 'Controller/BaseController.php';
+require_once './autoload.php';
 
-$route = new Route();
+use Dconco\Router\Route;
+use Dconco\Router\view;
 
 $api_dir = 'Controller/UserController.php';
 
 // Register API's
-$route->add("/api/v1/account/login", $api_dir);
-$route->add("/api/v1/account/register", $api_dir);
-$route->add("/api/v1/account/logout", $api_dir);
-$route->add("/api/v1/profile/{user_id}", $api_dir);
-$route->add("/api/v1/dashboard", $api_dir);
+// Route::any("/api/v1/account/login", $api_dir);
+// Route::any("/api/v1/account/register", $api_dir);
+// Route::any("/api/v1/account/logout", $api_dir);
+// Route::any("/api/v1/profile/{user_id}", $api_dir);
+// Route::any("/api/v1/dashboard", $api_dir);
 
-// Register views page
-$route->add('/', 'views/index.php');
-$route->add('/login', 'views/login.php');
-$route->add('/signup', 'views/signup.php');
-$route->add('/profile/{user_id}', 'views/profile.php');
+// // Register views page
+// Route::any('/login', 'views/login.php');
+// Route::any('/signup', 'views/signup.php');
+// Route::any('/profile/{user_id}', 'views/profile.php');
+
+
+/* REGISTER ROUTES */
+
+// view route
+Route::view('/|/home', 'views::index');
+
+// get route
+Route::get('/profile/{user_id}/post/{post_id}', function (int $user_id, int $post_id)
+{
+    return $user_id . '<br>' . $post_id;
+});
 
 // Handle not found errors
-$route->notFound('views/errors/404.php');
+Route::notFound(function ()
+{
+    header('Content-Type: text/html, charset=utf-8');
+    return file_get_contents(view::render('views::errors::404'));
+});

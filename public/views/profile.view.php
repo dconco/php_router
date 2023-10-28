@@ -16,7 +16,9 @@ if (isset($req['user_id']))
 
 <body>
     <h1>
-        <?php echo $user_id ?> Profile
+        <?php if ($user_id === $_SESSION['user_id']): ?>
+            <h3>You're logged-in as <span class='get_user_name'></span>
+            <?php endif; ?>
     </h1>
 
 
@@ -28,7 +30,7 @@ if (isset($req['user_id']))
             },
             baseURL: 'http://localhost/projects/php_router'
         })
-            .then((res) => console.log(res))
+            .then((res) => { })
             .catch((err) => console.log(err));
 
 

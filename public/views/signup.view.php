@@ -37,8 +37,8 @@
 
 
     <!-- JAVASCRIPT LINKS-->
-    <script src="views/src/axios/axios.min.js"></script>
-    <script src="views/src/signup.js"></script>
+    <script src="public/src/axios/axios.min.js"></script>
+    <script src="public/src/signup.js"></script>
 </body>
 
 </html>

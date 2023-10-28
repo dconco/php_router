@@ -1,11 +1,11 @@
 <?php
 
-use JWT\Token\Token;
+use Dconco\Token\Token;
 
 chdir(dirname(__DIR__));
 
 $response = [];
-$user_id  = $_SESSION['user_id'] = $_COOKIE['user_id'];
+$user_id = $_SESSION['user_id'] = $_COOKIE['user_id'];
 
 try
 {
@@ -22,7 +22,7 @@ try
 
     $access_token = $matches[1];
 }
-catch (Exception $e)
+catch ( Exception $e )
 {
     $response = [
         'status' => 401,
@@ -35,7 +35,7 @@ catch (Exception $e)
 
 
 // CONNECT TO DATABASE
-$db         = new DB();
+$db = new DB();
 $user_query = $db->GET("users", "access_token, email", "user_id = $user_id"); // get the user access_token from database
 
 // if error while trying to check user from database

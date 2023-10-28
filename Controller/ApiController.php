@@ -1,6 +1,6 @@
 <?php
 
-namespace Api;
+namespace Dconco\Api;
 
 /**
  * HANDLING EACH API ENDPOINTS
@@ -34,8 +34,8 @@ class Endpoint
             $req_data = json_decode(file_get_contents('php://input'), true);
 
             if (
-                (empty($req_data['fullname']) || empty($req_data['email']) || empty($req_data['password'])) ||
-                strlen($req_data['password']) < 5 || !filter_var($req_data['email'], FILTER_VALIDATE_EMAIL)
+            (empty($req_data['fullname']) || empty($req_data['email']) || empty($req_data['password'])) ||
+            strlen($req_data['password']) < 5 || !filter_var($req_data['email'], FILTER_VALIDATE_EMAIL)
             )
             {
                 self::$response = [
@@ -85,8 +85,8 @@ class Endpoint
             $req_data = json_decode(file_get_contents('php://input'), true);
 
             if (
-                empty($req_data['email']) ||
-                empty($req_data['password'])
+            empty($req_data['email']) ||
+            empty($req_data['password'])
             )
             {
                 self::$response = [
@@ -168,7 +168,7 @@ class Endpoint
         }
         else
         {
-            $user_id = (int) $user_id;
+            $user_id = (int)$user_id;
 
             if ($user_id == $_SESSION['user_id'])
             { // user_id is logged-in user

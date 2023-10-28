@@ -3,13 +3,14 @@
 header("Access-Control-Allow-Origin: localhost");
 
 // Allow specific HTTP methods (e.g., GET, POST, OPTIONS)
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS, UPDATE, DELETE");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, UPDATE, DELETE");
 
 // Allow specific HTTP headers
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization");
 
 //Handle preflight requests (OPTIONS method)
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS")
+{
     // Return 200 OK status for preflight requests
     http_response_code(200);
     exit;

@@ -1,6 +1,6 @@
 <?php
 
-namespace JWT\Token;
+namespace Dconco\Token;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -13,7 +13,13 @@ use Exception;
  * Verify token
  * 
  * @author DaveConco <concodave@gmail.com>
+ * @link https://github.com/dconco/php_router
+ * @category generate_token
+ * @package token
+ * @version ${1:1.0.0}
+ * @return void
  * @method array create()
+ * @method array verify()
  */
 
 class Token
@@ -88,7 +94,7 @@ class Token
 
             return $response;
         }
-        catch (Exception $e)
+        catch ( Exception $e )
         {
             $response = [
                 'status' => 500,

@@ -2,17 +2,10 @@
 
 define('REQUEST_METHOD', $_SERVER['REQUEST_METHOD']);
 
-require_once 'vendor/autoload.php';
-require_once 'Models/database.php';
-require_once 'ApiController.php';
-require_once 'secret_key.php';
-require_once 'env.config.php';
-require_once 'Token.php';
+use Dconco\Api\Endpoint;
 
-use Api\Endpoint;
-
-$uri     = $_REQUEST["uri"];
-$url     = explode("?", $uri);
+$uri = $_REQUEST["uri"];
+$url = explode("?", $uri);
 $req_uri = preg_replace("/(^\/)|(\/$)/", "", $url[0]);
 
 session_start();
