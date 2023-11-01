@@ -1,6 +1,6 @@
 <?php
 
-namespace Dconco\Router;
+namespace PhpSlides\Router;
 
 use Exception;
 
@@ -9,16 +9,17 @@ use Exception;
  * Create route & api that accept different methods
  * 
  * @author Dave Conco <concodave@gmail.com>
- * @link https://github.com/dconco/php_router
+ * @link https://github.com/dconco/php_slides
  * @category api, router
- * @package php_router
+ * @package php_slides
  * @version ${1:1.0.0}
  * @return void
  */
 
 class Route
 {
-    private static function simpleRoute(string $route, $callback)
+
+    private static function simpleRoute($route, $callback)
     {
         //replacing first and last forward slashes
         //$_REQUEST['uri'] will be empty if req uri is /
@@ -53,6 +54,7 @@ class Route
     public static function any(string $route, $callback)
     {
         //will store all the parameters value in this array
+
         $req = [];
         $req_value = [];
 
@@ -63,6 +65,7 @@ class Route
         preg_match_all("/(?<={).+?(?=})/", $route, $paramMatches);
 
         //if the route does not contain any param call simpleRoute();
+
         if (empty($paramMatches[0]))
         {
             self::simpleRoute($route, $callback);
@@ -70,6 +73,7 @@ class Route
         }
 
         //setting parameters names
+
         foreach ($paramMatches[0] as $key)
         {
             $paramKey[] = $key;
@@ -105,14 +109,17 @@ class Route
 
         //exploding request uri string to array to get
         //the exact index number value of parameter from $_REQUEST['uri']
+
         $reqUri = explode("/", $reqUri);
 
         //running for each loop to set the exact index number with reg expression
         //this will help in matching route
+
         foreach ($indexNum as $key => $index)
         {
             //in case if req uri with param index is empty then return
             //because url is not valid for this route
+
             if (empty($reqUri[$index]))
             {
                 return;
@@ -131,6 +138,7 @@ class Route
 
         //replace all / with \/ for reg expression
         //regex to match route is ready !
+
         $reqUri = str_replace("/", "\\/", $reqUri);
 
         //now matching route with regex
@@ -243,9 +251,18 @@ class Route
 }
 
 
-class view
+/**
+ * Router View
+ * which control the public url and validate it
+ */
+readonly class view
 {
-    public static function render($view)
+    /**
+     * Render views and parse public url in views
+     * @param string $view
+     * @return string
+     */
+    public static function render(string $view): null|string
     {
         try
         {
@@ -256,6 +273,9 @@ class view
             }
             else
             {
+
+                // split :: into array and extract the folder and files
+
                 $file = preg_split('/(::)|::/', $view);
                 $view = '';
 
@@ -271,8 +291,10 @@ class view
                     }
                 }
 
+                // available file extension
                 $ext = [ '.view.php', '.php', '.html', '.htm', '.txt' ];
 
+                // looping over the array and selected matches
                 for ($i = 0; $i < count($ext); $i++)
                 {
                     $file_uri = 'public' . $view . $file[count($file) - 1] . $ext[$i];
@@ -281,8 +303,13 @@ class view
                     {
                         return $file_uri;
                     }
+                    else
+                    {
+                        throw new Exception("File already exists", 409);
+                    }
                 }
-                exit;
+
+                return null;
             }
         }
         catch ( Exception $e )

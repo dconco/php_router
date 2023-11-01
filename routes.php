@@ -2,8 +2,8 @@
 
 require_once './autoload.php';
 
-use Dconco\Router\Route;
-use Dconco\Router\view;
+use PhpSlides\Router\Route;
+use PhpSlides\Router\view;
 
 $api_dir = 'Controller/UserController.php';
 
@@ -26,8 +26,9 @@ $api_dir = 'Controller/UserController.php';
 Route::view('/|/home', 'views::index');
 
 // get route
-Route::get('/profile/{user_id}/post/{post_id}', function (int $user_id, int $post_id)
+Route::get('/profile/{user_id}/post/{post_id}', function ($user_id, $post_id)
 {
+    echo ($_GET['data']);
     return $user_id . '<br>' . $post_id;
 });
 

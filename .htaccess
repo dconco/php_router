@@ -1,6 +1,10 @@
 RewriteEngine On
+
+# Accept Authorization Header, like Bearer $token
 RewriteCond %{HTTP:Authorization} ^(.+)$
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-RewriteCond %{REQUEST_FILENAME} !-f
+# Redirect all folders and files in the root project to routes.php
+RewriteCond %{REQUEST_FILENAME} !-d|-d
+RewriteCond %{REQUEST_FILENAME} !-f|-f
 RewriteRule ^(.*)$ routes.php?uri=$1 [QSA,L]
