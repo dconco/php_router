@@ -1,10 +1,12 @@
 <?php
 
-require_once 'Controller/BaseController.php';
-require_once 'Controller/ApiController.php';
-require_once 'vendor/autoload.php';
-require_once 'Models/database.php';
-include_once "Models/cors.php";
-require_once 'secret_key.php';
-require_once 'env.config.php';
-require_once 'Token.php';
+$base_dir = __DIR__;
+
+require_once $base_dir . '/Controller/BaseController.php';
+require_once $base_dir . '/Controller/ApiController.php';
+require_once $base_dir . '/vendor/autoload.php';
+require_once $base_dir . '/Models/database.php';
+include_once $base_dir . "/Models/cors.php";
+require_once $base_dir . '/web/secret_key.php';
+require_once $base_dir . '/web/Token.php';
+require_once $base_dir . '/env.config.php';
